@@ -196,7 +196,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
           </div>
         </td>
         <td className={!isFilled ? "text-muted" : (diff > 0 ? 'text-success' : diff < 0 ? 'text-danger' : 'text-muted')} style={{ fontWeight: isFilled ? 600 : 400 }}>
-          {isFilled ? (diff > 0 ? `+${formatHoursToHHMM(diff).substring(1)}` : formatHoursToHHMM(diff)) : '-'}
+          {isFilled ? (diff > 0 ? `+${formatHoursToHHMM(diff)}` : formatHoursToHHMM(diff)) : '-'}
         </td>
         <td>
           <button 
@@ -272,7 +272,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
                 <tr key={`weekly-summary-${weekIdx}`} style={{ background: 'var(--glass-border)' }}>
                   <td colSpan={3} style={{ textAlign: 'right', fontWeight: 600 }}>Weekly Balance:</td>
                   <td colSpan={2} style={{ fontWeight: 600 }} className={!anyFilled ? "text-muted" : (weeklyDiff > 0 ? 'text-success' : weeklyDiff < 0 ? 'text-danger' : 'text-muted')}>
-                    {anyFilled ? (weeklyDiff > 0 ? `+${formatHoursToHHMM(weeklyDiff).substring(1)}` : formatHoursToHHMM(weeklyDiff)) : '-'}
+                    {anyFilled ? (weeklyDiff > 0 ? `+${formatHoursToHHMM(weeklyDiff)}` : formatHoursToHHMM(weeklyDiff)) : '-'}
                   </td>
                 </tr>
               );

@@ -29,7 +29,7 @@ export function calculateBalances(
         // (2 - 11 + 12) % 12 = 3 months ago
         const monthsDiff = (currentMonth - record.month + 12) % 12;
 
-        if (monthsDiff <= settings.expirationMonths) {
+        if (monthsDiff < settings.expirationMonths) {
           totalOverwork += diff;
         }
       }

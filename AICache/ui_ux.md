@@ -1,6 +1,6 @@
 # UI, UX, and Styling Guidelines
 
-The application strictly adheres to a clean, flat, glass-like aesthetic without heavy frameworks.
+The application follows a clean, flat, glass-like aesthetic without heavy frameworks.
 
 ## CSS Rules (`src/index.css`)
 - **No Box Shadows**: All drop shadows and lift effects (`transform: translateY`) have been removed across the entire application to maintain a perfectly flat, non-intrusive UI.
