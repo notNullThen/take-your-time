@@ -145,7 +145,6 @@ function App() {
         settings={settings}
       />
 
-      <h2 style={{ marginTop: '32px' }}>History</h2>
       <RecordTable 
         records={records} 
         settings={settings} 

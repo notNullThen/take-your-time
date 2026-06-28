@@ -175,18 +175,23 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
 
   return (
     <div className="glass-panel">
-      <div className="flex-between" style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h2>View Month:</h2>
-          <select 
-            value={selectedMonth} 
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            style={{ marginBottom: '16px', fontWeight: 'bold' }}
-          >
-            {MONTH_NAMES.map((name, i) => (
-              <option key={i + 1} value={i + 1}>{name}</option>
-            ))}
-          </select>
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ marginBottom: '12px' }}>View Month</h2>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {MONTH_NAMES.map((name, i) => (
+            <button
+              key={i + 1}
+              onClick={() => setSelectedMonth(i + 1)}
+              className={selectedMonth === i + 1 ? 'primary' : 'secondary'}
+              style={{
+                borderRadius: '20px',
+                padding: '6px 16px',
+                fontSize: '0.85rem'
+              }}
+            >
+              {name}
+            </button>
+          ))}
         </div>
       </div>
       
