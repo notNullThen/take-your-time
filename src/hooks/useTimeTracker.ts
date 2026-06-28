@@ -6,6 +6,7 @@ const STORAGE_KEY = 'take_your_time_data';
 const DEFAULT_SETTINGS: AppSettings = {
   standardHours: 8,
   expirationMonths: 3,
+  theme: 'auto',
 };
 
 export function useTimeTracker() {
@@ -19,8 +20,17 @@ export function useTimeTracker() {
     if (data) {
       try {
         const parsed = JSON.parse(data) as ExportData;
-        if (parsed.records) setRecords(parsed.records);
-        if (parsed.settings) setSettings({ ...DEFAULT_SETTINGS, ...parsed.settings });
+        
+        // Migrate old data or filter invalid
+        let validRecords: WorkRecord[] = [];
+        if (parsed.records) {
+          validRecords = parsed.records.filter(r => typeof r.month === 'number' && typeof r.day === 'number');
+        }
+        setRecords(validRecords);
+
+        if (parsed.settings) {
+          setSettings({ ...DEFAULT_SETTINGS, ...parsed.settings });
+        }
       } catch (e) {
         console.error('Failed to parse local storage data', e);
       }
@@ -36,21 +46,21 @@ export function useTimeTracker() {
     }
   }, [records, settings, isLoaded]);
 
-  const addRecord = (date: string, hours: number) => {
+  const addRecord = (month: number, day: number, hours: number) => {
     setRecords((prev) => {
-      // Check if record for date already exists, if so update it
-      const existingIdx = prev.findIndex((r) => r.date === date);
+      // Check if record for month/day already exists, if so update it
+      const existingIdx = prev.findIndex((r) => r.month === month && r.day === day);
       if (existingIdx >= 0) {
         const newRecords = [...prev];
-        newRecords[existingIdx] = { date, hours };
+        newRecords[existingIdx] = { month, day, hours };
         return newRecords;
       }
-      return [...prev, { date, hours }];
+      return [...prev, { month, day, hours }];
     });
   };
 
-  const deleteRecord = (date: string) => {
-    setRecords((prev) => prev.filter((r) => r.date !== date));
+  const deleteRecord = (month: number, day: number) => {
+    setRecords((prev) => prev.filter((r) => !(r.month === month && r.day === day)));
   };
 
   const updateSettings = (newSettings: Partial<AppSettings>) => {
@@ -58,8 +68,11 @@ export function useTimeTracker() {
   };
 
   const importData = (data: ExportData) => {
-    if (data.records) setRecords(data.records);
-    if (data.settings) setSettings(data.settings);
+    if (data.records) {
+      const validRecords = data.records.filter(r => typeof r.month === 'number' && typeof r.day === 'number');
+      setRecords(validRecords);
+    }
+    if (data.settings) setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
   };
 
   const exportData = () => {
@@ -70,7 +83,7 @@ export function useTimeTracker() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `take_your_time_export_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `take_your_time_export.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

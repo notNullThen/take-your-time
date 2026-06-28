@@ -1,14 +1,17 @@
 import type { AppSettings, WorkRecord } from '../types';
 
+export const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 export function calculateBalances(
   records: WorkRecord[],
   settings: AppSettings,
-  currentDateStr: string = new Date().toISOString().split('T')[0]
+  currentMonth: number = new Date().getMonth() + 1
 ) {
   let totalOverwork = 0;
   let totalUnderwork = 0;
-
-  const current = new Date(currentDateStr);
 
   records.forEach((record) => {
     const diff = record.hours - settings.standardHours;
@@ -21,18 +24,11 @@ export function calculateBalances(
       if (settings.expirationMonths === 'endless') {
         totalOverwork += diff;
       } else {
-        const recordDate = new Date(record.date);
-        
-        // Calculate month difference
-        const monthsDiff =
-          (current.getFullYear() - recordDate.getFullYear()) * 12 +
-          (current.getMonth() - recordDate.getMonth());
+        // Calculate month difference circularly
+        // e.g., currentMonth = 2 (Feb), record.month = 11 (Nov)
+        // (2 - 11 + 12) % 12 = 3 months ago
+        const monthsDiff = (currentMonth - record.month + 12) % 12;
 
-        // If current date is within the expiration period
-        // Let's say expiration = 3 months. 
-        // Example: Record in Jan (0). Current is Apr (3). Diff = 3. Still alive if Diff <= 3.
-        // Wait, normally if it's the 4th month it expires, or exactly 3 calendar months.
-        // The prompt says "overworked hours are living only 3 monhts". Let's use <= expirationMonths.
         if (monthsDiff <= settings.expirationMonths) {
           totalOverwork += diff;
         }
@@ -47,12 +43,25 @@ export function calculateBalances(
   };
 }
 
-export function groupByMonth(records: WorkRecord[]) {
-  const grouped: Record<string, WorkRecord[]> = {};
+// Groups by month, returning an array sorted by month (1 to 12)
+export function groupAndSortRecords(records: WorkRecord[]) {
+  const grouped: Record<number, WorkRecord[]> = {};
+  
   records.forEach((r) => {
-    const month = r.date.substring(0, 7); // YYYY-MM
-    if (!grouped[month]) grouped[month] = [];
-    grouped[month].push(r);
+    if (!grouped[r.month]) grouped[r.month] = [];
+    grouped[r.month].push(r);
   });
-  return grouped;
+
+  // Sort days within each month descending (newest first, 31 to 1)
+  Object.keys(grouped).forEach((m) => {
+    grouped[Number(m)].sort((a, b) => b.day - a.day);
+  });
+
+  // Return sorted entries by month descending (12 to 1)
+  return Object.entries(grouped)
+    .sort(([m1], [m2]) => Number(m2) - Number(m1))
+    .map(([monthStr, monthRecords]) => ({
+      month: Number(monthStr),
+      records: monthRecords,
+    }));
 }
