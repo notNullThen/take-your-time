@@ -54,6 +54,23 @@ body {
   width: 100%;
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* Glass panel utility */
 .glass-panel {
   background: var(--glass-bg);
@@ -100,6 +117,31 @@ button {
   gap: 8px;
 }
 
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 button.primary {
   background-color: var(--primary);
   color: white;
@@ -116,6 +158,14 @@ button.secondary {
 }
 
 button.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.file-button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.file-button.secondary:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -183,6 +233,64 @@ input[type="number"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.breakdown-card {
+  overflow: hidden;
+}
+
+.breakdown-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.breakdown-summary::-webkit-details-marker {
+  display: none;
+}
+
+.breakdown-summary h2 {
+  margin-bottom: 0;
+}
+
+.breakdown-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  transition: background-color 0.2s;
+}
+
+.breakdown-summary:hover .breakdown-toggle-button {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.breakdown-toggle-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s;
+}
+
+.breakdown-card[open] .breakdown-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.breakdown-content {
+  padding-top: 16px;
 }
 
 .text-success { color: var(--success); }
@@ -255,4 +363,59 @@ body.light-theme .empty-row td {
 /* File Input hidden */
 .hidden-file-input {
   display: none;
+}
+
+@media (min-width: 641px) {
+  .breakdown-summary {
+    cursor: default;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 16px;
+  }
+
+  .app-header {
+    padding: 14px 16px;
+    align-items: flex-start;
+  }
+
+  .app-actions {
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+
+  .collapses-on-mobile {
+    width: 42px;
+    height: 42px;
+    padding: 10px;
+    gap: 0;
+  }
+
+  .collapses-on-mobile .button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .glass-panel {
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .breakdown-card:not([open]) {
+    margin-bottom: 16px;
+  }
 }

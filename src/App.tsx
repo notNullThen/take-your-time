@@ -12,6 +12,22 @@ type ClearAllDataWindow = Window & {
   [CLEARING_ALL_DATA_FLAG]?: boolean;
 };
 
+const LoadIcon = () => (
+  <svg className="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 3v12" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M5 21h14" />
+  </svg>
+);
+
+const SaveIcon = () => (
+  <svg className="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+    <path d="M17 21v-8H7v8" />
+    <path d="M7 3v5h8" />
+  </svg>
+);
+
 function App() {
   const {
     records,
@@ -116,46 +132,25 @@ function App() {
 
   return (
     <div className="app-container">
-      <header
-        className="flex-between glass-panel"
-        style={{
-          padding: "16px 24px",
-          marginBottom: "24px",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
+      <header className="app-header glass-panel">
         <h1>Take Your Time</h1>
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="app-actions">
           <button
             className="secondary"
             onClick={cycleTheme}
             title={`Theme: ${settings.theme}`}
+            aria-label={`Theme: ${settings.theme}`}
           >
             {getThemeIcon()}
           </button>
 
           <label
-            className="secondary"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "10px 16px",
-              border: "1px solid var(--glass-border)",
-              borderRadius: "var(--radius)",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-              fontWeight: 500,
-            }}
+            className="secondary file-button collapses-on-mobile"
+            title="Load Data"
+            aria-label="Load Data"
           >
-            Load Data
+            <LoadIcon />
+            <span className="button-label">Load Data</span>
             <input
               type="file"
               accept=".json"
@@ -164,11 +159,22 @@ function App() {
             />
           </label>
 
-          <button className="secondary" onClick={exportData}>
-            Save Data
+          <button
+            className="secondary collapses-on-mobile"
+            onClick={exportData}
+            title="Save Data"
+            aria-label="Save Data"
+          >
+            <SaveIcon />
+            <span className="button-label">Save Data</span>
           </button>
 
-          <button className="secondary" onClick={() => setIsSettingsOpen(true)}>
+          <button
+            className="secondary"
+            onClick={() => setIsSettingsOpen(true)}
+            title="Settings"
+            aria-label="Settings"
+          >
             ⚙️
           </button>
         </div>
