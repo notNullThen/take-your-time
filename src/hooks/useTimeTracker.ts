@@ -9,6 +9,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'auto',
 };
 
+const CLEARING_ALL_DATA_FLAG = '__takeYourTimeClearingAllData';
+
+type ClearAllDataWindow = Window & {
+  [CLEARING_ALL_DATA_FLAG]?: boolean;
+};
+
 export function useTimeTracker() {
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -91,23 +97,29 @@ export function useTimeTracker() {
   };
 
   const clearAllData = async () => {
-    // Clear all localStorage (not just the app key)
-    localStorage.clear();
+    (window as ClearAllDataWindow)[CLEARING_ALL_DATA_FLAG] = true;
 
-    // Clear all Cache API caches (busts cached static assets)
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    try {
+      // Clear all local and session storage, not just the app key.
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Clear all Cache API caches, including stale static assets from past deploys.
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.allSettled(cacheNames.map((name) => caches.delete(name)));
+      }
+
+      // Unregister any service workers that might keep serving old assets.
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.allSettled(registrations.map((reg) => reg.unregister()));
+      }
+    } finally {
+      const reloadUrl = new URL(window.location.href);
+      reloadUrl.searchParams.set('cache_bust', Date.now().toString());
+      window.location.replace(reloadUrl.toString());
     }
-
-    // Unregister any service workers
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map((reg) => reg.unregister()));
-    }
-
-    // Hard reload – bypasses browser cache for this navigation
-    window.location.reload();
   };
 
   return {

@@ -6,6 +6,12 @@ import { RecordTable } from './components/RecordTable';
 import { SettingsModal } from './components/SettingsModal';
 import type { ExportData } from './types';
 
+const CLEARING_ALL_DATA_FLAG = '__takeYourTimeClearingAllData';
+
+type ClearAllDataWindow = Window & {
+  [CLEARING_ALL_DATA_FLAG]?: boolean;
+};
+
 function App() {
   const {
     records,
@@ -52,6 +58,8 @@ function App() {
   // Warning when closing the tab
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if ((window as ClearAllDataWindow)[CLEARING_ALL_DATA_FLAG]) return;
+
       e.preventDefault();
       const message = "Please export your data before closing to prevent data loss!";
       e.returnValue = message;
@@ -89,7 +97,7 @@ function App() {
         } else {
           alert('Invalid file format.');
         }
-      } catch (err) {
+      } catch {
         alert('Failed to parse JSON file.');
       }
     };

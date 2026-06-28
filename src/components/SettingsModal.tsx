@@ -5,7 +5,7 @@ interface SettingsModalProps {
   settings: AppSettings;
   onSave: (s: Partial<AppSettings>) => void;
   onClose: () => void;
-  onClearAll: () => void;
+  onClearAll: () => Promise<void>;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose, onClearAll }) => {
@@ -14,6 +14,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, 
     settings.expirationMonths === 'endless' ? 'endless' : String(settings.expirationMonths)
   );
   const [showClearWarning, setShowClearWarning] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const handleSave = () => {
     onSave({
@@ -24,6 +25,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, 
   };
 
   const handleClearAll = async () => {
+    setIsClearing(true);
     await onClearAll();
   };
 
@@ -102,9 +104,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, 
                 <button
                   className="danger"
                   onClick={handleClearAll}
+                  disabled={isClearing}
                   style={{ fontWeight: 600 }}
                 >
-                  Yes, Delete Everything
+                  {isClearing ? 'Deleting...' : 'Yes, Delete Everything'}
                 </button>
               </div>
             </div>
