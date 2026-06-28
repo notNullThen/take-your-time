@@ -125,7 +125,9 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onS
     return (
       <tr key={`date-${dateObj.month}-${dateObj.day}`} className={!isFilled ? "empty-row" : ""} data-weekend={isWeekend}>
         <td className={!isFilled ? "text-muted" : ""}>{dayName}</td>
-        <td className={!isFilled ? "text-muted" : ""}>{monthName} {dateObj.day}</td>
+        <td className={!isFilled ? "text-muted" : ""}>
+          <span className="desktop-only">{monthName} </span>{dateObj.day}
+        </td>
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <input
@@ -209,13 +211,15 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onS
             className="secondary" 
             onClick={handleClear}
             disabled={!isFilled}
+            aria-label={`Clear day ${dateObj.day}`}
             style={{ 
               opacity: isFilled ? 1 : 0.5,
               padding: '6px 12px',
               fontSize: '0.8rem'
             }}
           >
-            Clear
+            <span className="desktop-only">Clear</span>
+            <span className="mobile-only" aria-hidden="true">🧹</span>
           </button>
         </td>
       </tr>
@@ -264,11 +268,17 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onS
         <table>
           <thead>
             <tr>
-              <th>Weekday</th>
+              <th>
+                <span className="desktop-only">Weekday</span>
+                <span className="mobile-only">Day</span>
+              </th>
               <th>Date</th>
               <th>Work (HH:MM)</th>
-              <th>Day Balance</th>
-              <th>Actions</th>
+              <th>
+                <span className="desktop-only">Day Balance</span>
+                <span className="mobile-only">Day Bal.</span>
+              </th>
+              <th><span className="desktop-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
