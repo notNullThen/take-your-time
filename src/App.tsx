@@ -48,6 +48,18 @@ function App() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [settings.theme]);
 
+  // Warning when closing the tab
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      const message = "Please export your data before closing to prevent data loss!";
+      e.returnValue = message;
+      return message;
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const cycleTheme = () => {
     const nextTheme: Record<string, 'auto' | 'dark' | 'light'> = {
       auto: 'dark',
