@@ -90,10 +90,24 @@ export function useTimeTracker() {
     URL.revokeObjectURL(url);
   };
 
-  const clearAllData = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setRecords([]);
-    setSettings(DEFAULT_SETTINGS);
+  const clearAllData = async () => {
+    // Clear all localStorage (not just the app key)
+    localStorage.clear();
+
+    // Clear all Cache API caches (busts cached static assets)
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    }
+
+    // Unregister any service workers
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    }
+
+    // Hard reload – bypasses browser cache for this navigation
+    window.location.reload();
   };
 
   return {

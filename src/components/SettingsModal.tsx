@@ -23,9 +23,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, 
     onClose();
   };
 
-  const handleClearAll = () => {
-    onClearAll();
-    onClose();
+  const handleClearAll = async () => {
+    await onClearAll();
   };
 
   return (
