@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# Take Your Time
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A client-side utility to track your work hours and calculate valid overwork and underwork balances.
 
-Currently, two official plugins are available:
+## Features
+- **Local Storage:** All your data remains private and securely stored within your browser.
+- **Expiration Policies:** Overworked hours can be configured to expire after a certain number of months. Underwork hours do not expire.
+- **Data Portability:** Export your configurations and raw input data to JSON format, and seamlessly import it on another device.
+- **Responsive UI:** Premium glassmorphism design that works perfectly on both desktop and mobile devices.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Running Locally
 
-## React Compiler
+To run the application locally on your machine, follow these steps:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Ensure you have [Node.js](https://nodejs.org/) installed.
+2. Open a terminal in the project directory (`/home/e-ubuntu/projects/take-your-time`).
+3. Install the required dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the local development server:
+   ```bash
+   npm run dev
+   ```
+5. Open your browser and navigate to the URL shown in the terminal (usually `http://localhost:5173`).
 
-## Expanding the Oxlint configuration
+## Deployment
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+This app is entirely client-side and can be hosted statically. To deploy on platforms like Render.com:
+- Connect your GitHub repository.
+- Set the build command to: `npm run build`
+- Set the publish directory to: `dist`
