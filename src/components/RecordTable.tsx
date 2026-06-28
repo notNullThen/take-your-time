@@ -208,7 +208,28 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
           </thead>
           <tbody>
             {weeks.map((week, weekIdx) => {
-              const weekRows = week.map((dateObj, dayIdx) => renderRow(dateObj, weekIdx, dayIdx));
+              let weeklyDiff = 0;
+              let anyFilled = false;
+              
+              const weekRows = week.map((dateObj, dayIdx) => {
+                if (dateObj) {
+                  const record = records.find(r => r.month === dateObj.month && r.day === dateObj.day);
+                  if (record && record.hours > 0) {
+                    weeklyDiff += (record.hours - settings.standardHours);
+                    anyFilled = true;
+                  }
+                }
+                return renderRow(dateObj, weekIdx, dayIdx);
+              });
+
+              weekRows.push(
+                <tr key={`weekly-summary-${weekIdx}`} style={{ background: 'var(--glass-border)' }}>
+                  <td colSpan={3} style={{ textAlign: 'right', fontWeight: 600 }}>Weekly Balance:</td>
+                  <td colSpan={2} style={{ fontWeight: 600 }} className={!anyFilled ? "text-muted" : (weeklyDiff > 0 ? 'text-success' : weeklyDiff < 0 ? 'text-danger' : 'text-muted')}>
+                    {anyFilled ? (weeklyDiff > 0 ? `+${formatHoursToHHMM(weeklyDiff).substring(1)}` : formatHoursToHHMM(weeklyDiff)) : '-'}
+                  </td>
+                </tr>
+              );
 
               // Add a separator between weeks
               if (weekIdx < weeks.length - 1) {
