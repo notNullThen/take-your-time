@@ -90,6 +90,12 @@ export function useTimeTracker() {
     URL.revokeObjectURL(url);
   };
 
+  const clearAllData = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setRecords([]);
+    setSettings(DEFAULT_SETTINGS);
+  };
+
   return {
     records,
     settings,
@@ -98,5 +104,6 @@ export function useTimeTracker() {
     updateSettings,
     importData,
     exportData,
+    clearAllData,
   };
 }

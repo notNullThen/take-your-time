@@ -15,6 +15,7 @@ function App() {
     updateSettings,
     importData,
     exportData,
+    clearAllData,
   } = useTimeTracker();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -157,6 +158,7 @@ function App() {
           settings={settings}
           onSave={updateSettings}
           onClose={() => setIsSettingsOpen(false)}
+          onClearAll={clearAllData}
         />
       )}
     </div>

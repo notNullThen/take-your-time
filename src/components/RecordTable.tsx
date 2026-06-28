@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { AppSettings, WorkRecord } from '../types';
 import { MONTH_NAMES, formatHoursToHHMM } from '../utils/calculations';
 
@@ -44,10 +44,38 @@ function getMonthCalendar(year: number, month: number) {
 export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onUpdate, onDelete }) => {
   const currentMonthIdx = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonthIdx);
+  const [editState, setEditState] = useState<{ key: string; value: string } | null>(null);
 
   const currentYear = new Date().getFullYear();
   const weeks = getMonthCalendar(currentYear, selectedMonth);
   const monthName = MONTH_NAMES[selectedMonth - 1];
+
+  const commitValue = useCallback((month: number, day: number, type: 'h' | 'm', value: string, otherFieldValue: number) => {
+    const parsed = value === '' ? 0 : parseInt(value, 10);
+    const clamped = isNaN(parsed) ? 0 : (type === 'm' ? Math.min(parsed, 59) : parsed);
+    const newH = type === 'h' ? clamped : otherFieldValue;
+    const newM = type === 'm' ? clamped : otherFieldValue;
+    const total = newH + newM / 60;
+    if (total === 0) {
+      onDelete(month, day);
+    } else {
+      onUpdate(month, day, total);
+    }
+  }, [onUpdate, onDelete]);
+
+  const focusNextRowHours = (currentInput: HTMLElement) => {
+    let row = currentInput.closest('tr')?.nextElementSibling;
+    while (row) {
+      const nextH = row.querySelector('.time-input-hours') as HTMLInputElement;
+      if (nextH) {
+        setTimeout(() => { nextH.focus(); nextH.select(); }, 0);
+        return;
+      }
+      row = row.nextElementSibling;
+    }
+    // No next row found - blur current input
+    (currentInput as HTMLInputElement).blur();
+  };
 
   const renderRow = (dateObj: { month: number; day: number } | null, weekIdx: number, dayIdx: number) => {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -77,26 +105,12 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
     const hrs = Math.floor(totalHours);
     const mins = Math.round((totalHours - hrs) * 60);
 
-    const handleTimeChange = (type: 'h' | 'm', value: string) => {
-      let newH = type === 'h' ? (value === '' ? 0 : parseInt(value)) : hrs;
-      let newM = type === 'm' ? (value === '' ? 0 : parseInt(value)) : mins;
-      
-      if (isNaN(newH)) newH = 0;
-      if (isNaN(newM)) newM = 0;
-
-      // Wrap minutes overflow into hours
-      if (newM >= 60) {
-        newH += Math.floor(newM / 60);
-        newM = newM % 60;
-      }
-      
-      const newVal = newH + newM / 60;
-      if (newVal === 0) {
-        onDelete(dateObj.month, dateObj.day);
-      } else {
-        onUpdate(dateObj.month, dateObj.day, newVal);
-      }
-    };
+    const hKey = `h-${dateObj.month}-${dateObj.day}`;
+    const mKey = `m-${dateObj.month}-${dateObj.day}`;
+    const hEditing = editState?.key === hKey;
+    const mEditing = editState?.key === mKey;
+    const hDisplay = hEditing ? editState.value : (isFilled ? String(hrs).padStart(2, '0') : '');
+    const mDisplay = mEditing ? editState.value : (isFilled ? String(mins).padStart(2, '0') : '');
 
     const handleClear = () => {
       onDelete(dateObj.month, dateObj.day);
@@ -109,21 +123,33 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <input
-              type="number"
-              min="0"
-              value={isFilled ? String(hrs).padStart(2, '0') : ''}
+              type="text"
+              inputMode="numeric"
+              className={`time-input-hours${!isFilled ? ' text-muted' : ''}`}
+              value={hDisplay}
+              onFocus={(e) => {
+                setEditState({ key: hKey, value: isFilled ? String(hrs).padStart(2, '0') : '' });
+                setTimeout(() => e.target.select(), 0);
+              }}
               onChange={(e) => {
-                handleTimeChange('h', e.target.value);
-                if (e.target.value.length === 2) {
-                  const nextSibling = e.target.nextElementSibling?.nextElementSibling as HTMLInputElement;
-                  if (nextSibling) {
-                    nextSibling.focus();
-                    nextSibling.select();
+                const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                setEditState({ key: hKey, value: val });
+                if (val.length === 2) {
+                  commitValue(dateObj.month, dateObj.day, 'h', val, mins);
+                  setEditState({ key: mKey, value: isFilled ? String(mins).padStart(2, '0') : '' });
+                  const minInput = e.target.nextElementSibling?.nextElementSibling as HTMLInputElement;
+                  if (minInput) {
+                    setTimeout(() => { minInput.focus(); minInput.select(); }, 0);
                   }
                 }
               }}
+              onBlur={() => {
+                if (hEditing) {
+                  commitValue(dateObj.month, dateObj.day, 'h', editState.value, mins);
+                  setEditState(null);
+                }
+              }}
               placeholder="00"
-              className={!isFilled ? "text-muted" : ""}
               style={{ 
                 width: '56px', 
                 padding: '6px',
@@ -134,13 +160,31 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
             />
             <span style={{ fontWeight: 'bold', color: !isFilled ? 'var(--text-muted)' : 'inherit' }}>:</span>
             <input
-              type="number"
-              min="0"
-              max="59"
-              value={isFilled ? String(mins).padStart(2, '0') : ''}
-              onChange={(e) => handleTimeChange('m', e.target.value)}
+              type="text"
+              inputMode="numeric"
+              className={`time-input-minutes${!isFilled ? ' text-muted' : ''}`}
+              value={mDisplay}
+              onFocus={(e) => {
+                setEditState({ key: mKey, value: isFilled ? String(mins).padStart(2, '0') : '' });
+                setTimeout(() => e.target.select(), 0);
+              }}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                setEditState({ key: mKey, value: val });
+                if (val.length === 2) {
+                  const clampedM = Math.min(parseInt(val, 10) || 0, 59);
+                  commitValue(dateObj.month, dateObj.day, 'm', String(clampedM), hrs);
+                  setEditState(null);
+                  focusNextRowHours(e.target);
+                }
+              }}
+              onBlur={() => {
+                if (mEditing) {
+                  commitValue(dateObj.month, dateObj.day, 'm', editState.value, hrs);
+                  setEditState(null);
+                }
+              }}
               placeholder="00"
-              className={!isFilled ? "text-muted" : ""}
               style={{ 
                 width: '56px', 
                 padding: '6px',
@@ -177,7 +221,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ marginBottom: '8px' }}>View Month</h2>
         <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '16px' }}>
-          💡 Tip: Use <b>Tab</b> and <b>Shift+Tab</b> to navigate between the hours and minutes. Typing 2 digits in the hours field automatically jumps to minutes!
+          💡 Tip: Type 2 digits for hours → auto-jumps to minutes. Type 2 digits for minutes → auto-jumps to the next day!
         </p>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {MONTH_NAMES.map((name, i) => (
