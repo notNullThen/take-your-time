@@ -41,6 +41,16 @@ function getMonthCalendar(year: number, month: number) {
   return weeks;
 }
 
+// Format decimal hours to HH:MM format
+function formatHoursToHHMM(decimalHours: number) {
+  const isNeg = decimalHours < 0;
+  const absHours = Math.abs(decimalHours);
+  const h = Math.floor(absHours);
+  const m = Math.round((absHours - h) * 60);
+  const sign = isNeg ? '-' : '+';
+  return `${isNeg ? sign : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onUpdate, onDelete }) => {
   const currentMonthIdx = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonthIdx);
@@ -48,17 +58,6 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
   const currentYear = new Date().getFullYear();
   const weeks = getMonthCalendar(currentYear, selectedMonth);
   const monthName = MONTH_NAMES[selectedMonth - 1];
-
-  const handleInputChange = (month: number, day: number, value: string) => {
-    if (value === '') {
-      onDelete(month, day);
-    } else {
-      const hours = Number(value);
-      if (!isNaN(hours) && hours >= 0) {
-        onUpdate(month, day, hours);
-      }
-    }
-  };
 
   const renderRow = (dateObj: { month: number; day: number } | null, weekIdx: number, dayIdx: number) => {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -71,40 +70,104 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
           <td className="text-muted"></td>
           <td className="text-muted">-</td>
           <td className="text-muted">-</td>
+          <td className="text-muted"></td>
         </tr>
       );
     }
 
     const record = records.find(r => r.month === dateObj.month && r.day === dateObj.day);
-    const isFilled = !!record;
+    const totalHours = record ? record.hours : 0;
+    const isFilled = totalHours > 0;
     
     let diff = 0;
     if (isFilled) {
-      diff = record.hours - settings.standardHours;
+      diff = totalHours - settings.standardHours;
     }
+
+    const hrs = Math.floor(totalHours);
+    const mins = Math.round((totalHours - hrs) * 60);
+
+    const handleTimeChange = (type: 'h' | 'm', value: string) => {
+      let newH = type === 'h' ? (value === '' ? 0 : parseInt(value)) : hrs;
+      let newM = type === 'm' ? (value === '' ? 0 : parseInt(value)) : mins;
+      
+      if (isNaN(newH)) newH = 0;
+      if (isNaN(newM)) newM = 0;
+
+      // Wrap minutes overflow into hours
+      if (newM >= 60) {
+        newH += Math.floor(newM / 60);
+        newM = newM % 60;
+      }
+      
+      const newVal = newH + newM / 60;
+      if (newVal === 0) {
+        onDelete(dateObj.month, dateObj.day);
+      } else {
+        onUpdate(dateObj.month, dateObj.day, newVal);
+      }
+    };
+
+    const handleClear = () => {
+      onDelete(dateObj.month, dateObj.day);
+    };
 
     return (
       <tr key={`date-${dateObj.month}-${dateObj.day}`} className={!isFilled ? "empty-row" : ""}>
         <td className={!isFilled ? "text-muted" : ""}>{dayName}</td>
         <td className={!isFilled ? "text-muted" : ""}>{monthName} {dateObj.day}</td>
         <td>
-          <input
-            type="number"
-            min="0"
-            step="0.5"
-            value={isFilled ? record.hours : ''}
-            onChange={(e) => handleInputChange(dateObj.month, dateObj.day, e.target.value)}
-            placeholder="-"
-            style={{ 
-              width: '80px', 
-              padding: '6px 10px',
-              margin: '-6px 0', // offset padding to avoid huge rows
-              fontSize: '0.9rem'
-            }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <input
+              type="number"
+              min="0"
+              value={isFilled ? String(hrs).padStart(2, '0') : ''}
+              onChange={(e) => handleTimeChange('h', e.target.value)}
+              placeholder="00"
+              className={!isFilled ? "text-muted" : ""}
+              style={{ 
+                width: '56px', 
+                padding: '6px',
+                margin: '-6px 0',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+              }}
+            />
+            <span style={{ fontWeight: 'bold', color: !isFilled ? 'var(--text-muted)' : 'inherit' }}>:</span>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={isFilled ? String(mins).padStart(2, '0') : ''}
+              onChange={(e) => handleTimeChange('m', e.target.value)}
+              placeholder="00"
+              className={!isFilled ? "text-muted" : ""}
+              style={{ 
+                width: '56px', 
+                padding: '6px',
+                margin: '-6px 0',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+              }}
+            />
+          </div>
         </td>
         <td className={!isFilled ? "text-muted" : (diff > 0 ? 'text-success' : diff < 0 ? 'text-danger' : 'text-muted')} style={{ fontWeight: isFilled ? 600 : 400 }}>
-          {isFilled ? `${diff > 0 ? '+' : ''}${diff} hrs` : '-'}
+          {isFilled ? (diff > 0 ? `+${formatHoursToHHMM(diff).substring(1)}` : formatHoursToHHMM(diff)) : '-'}
+        </td>
+        <td>
+          <button 
+            className="secondary" 
+            onClick={handleClear}
+            disabled={!isFilled}
+            style={{ 
+              opacity: isFilled ? 1 : 0.5,
+              padding: '6px 12px',
+              fontSize: '0.8rem'
+            }}
+          >
+            Clear
+          </button>
         </td>
       </tr>
     );
@@ -133,8 +196,9 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
             <tr>
               <th>Weekday</th>
               <th>Date</th>
-              <th>Work (hrs)</th>
+              <th>Work (HH:MM)</th>
               <th>Day Balance</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -145,7 +209,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
               if (weekIdx < weeks.length - 1) {
                 weekRows.push(
                   <tr key={`sep-${weekIdx}`}>
-                    <td colSpan={4} style={{ height: '16px', borderBottom: 'none' }}></td>
+                    <td colSpan={5} style={{ height: '16px', borderBottom: 'none' }}></td>
                   </tr>
                 );
               }
