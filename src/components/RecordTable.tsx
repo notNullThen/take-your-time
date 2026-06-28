@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { AppSettings, WorkRecord } from '../types';
-import { MONTH_NAMES } from '../utils/calculations';
+import { MONTH_NAMES, formatHoursToHHMM } from '../utils/calculations';
 
 interface RecordTableProps {
   records: WorkRecord[];
@@ -39,16 +39,6 @@ function getMonthCalendar(year: number, month: number) {
   }
   
   return weeks;
-}
-
-// Format decimal hours to HH:MM format
-function formatHoursToHHMM(decimalHours: number) {
-  const isNeg = decimalHours < 0;
-  const absHours = Math.abs(decimalHours);
-  const h = Math.floor(absHours);
-  const m = Math.round((absHours - h) * 60);
-  const sign = isNeg ? '-' : '+';
-  return `${isNeg ? sign : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onUpdate, onDelete }) => {
@@ -122,7 +112,16 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
               type="number"
               min="0"
               value={isFilled ? String(hrs).padStart(2, '0') : ''}
-              onChange={(e) => handleTimeChange('h', e.target.value)}
+              onChange={(e) => {
+                handleTimeChange('h', e.target.value);
+                if (e.target.value.length === 2) {
+                  const nextSibling = e.target.nextElementSibling?.nextElementSibling as HTMLInputElement;
+                  if (nextSibling) {
+                    nextSibling.focus();
+                    nextSibling.select();
+                  }
+                }
+              }}
               placeholder="00"
               className={!isFilled ? "text-muted" : ""}
               style={{ 
@@ -176,7 +175,10 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
   return (
     <div className="glass-panel">
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ marginBottom: '12px' }}>View Month</h2>
+        <h2 style={{ marginBottom: '8px' }}>View Month</h2>
+        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '16px' }}>
+          💡 Tip: Use <b>Tab</b> and <b>Shift+Tab</b> to navigate between the hours and minutes. Typing 2 digits in the hours field automatically jumps to minutes!
+        </p>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {MONTH_NAMES.map((name, i) => (
             <button

@@ -65,3 +65,13 @@ export function groupAndSortRecords(records: WorkRecord[]) {
       records: monthRecords,
     }));
 }
+
+// Format decimal hours to HH:MM format
+export function formatHoursToHHMM(decimalHours: number) {
+  const isNeg = decimalHours < 0;
+  const absHours = Math.abs(decimalHours);
+  const h = Math.floor(absHours);
+  const m = Math.round((absHours - h) * 60);
+  const sign = isNeg ? '-' : '+';
+  return `${isNeg ? sign : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}

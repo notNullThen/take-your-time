@@ -1,5 +1,6 @@
 import React from 'react';
 import type { AppSettings } from '../types';
+import { formatHoursToHHMM } from '../utils/calculations';
 
 interface SummaryCardsProps {
   totalOverwork: number;
@@ -19,7 +20,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
       <div className="glass-panel">
         <h2 className="text-muted">Total Net Balance</h2>
         <h1 className={netBalance > 0 ? 'text-success' : netBalance < 0 ? 'text-danger' : ''}>
-          {netBalance > 0 ? '+' : ''}{netBalance} hrs
+          {netBalance > 0 ? '+' : ''}{formatHoursToHHMM(netBalance).replace('+', '').replace('-', '')} 
         </h1>
         <p className="text-muted" style={{ marginTop: '8px', fontSize: '0.85rem' }}>
           Standard day: {settings.standardHours} hrs
@@ -29,11 +30,11 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         <h2 className="text-muted">Breakdown</h2>
         <div className="flex-between" style={{ marginBottom: '8px' }}>
           <span>Overwork (valid)</span>
-          <span className="text-success">+{totalOverwork}</span>
+          <span className="text-success">+{formatHoursToHHMM(totalOverwork).replace('+', '').replace('-', '')}</span>
         </div>
         <div className="flex-between">
           <span>Underwork</span>
-          <span className="text-danger">{totalUnderwork}</span>
+          <span className="text-danger">-{formatHoursToHHMM(totalUnderwork).replace('+', '').replace('-', '')}</span>
         </div>
         <p className="text-muted" style={{ marginTop: '12px', fontSize: '0.8rem' }}>
           * Overwork expires after {settings.expirationMonths} {settings.expirationMonths === 1 ? 'month' : 'months'}. Underwork does not expire.
