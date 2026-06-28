@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useTimeTracker } from './hooks/useTimeTracker';
-import { calculateBalances } from './utils/calculations';
-import { SummaryCards } from './components/SummaryCards';
-import { RecordTable } from './components/RecordTable';
-import { SettingsModal } from './components/SettingsModal';
-import type { ExportData } from './types';
+import { useState, useEffect } from "react";
+import { useTimeTracker } from "./hooks/useTimeTracker";
+import { calculateBalances } from "./utils/calculations";
+import { SummaryCards } from "./components/SummaryCards";
+import { RecordTable } from "./components/RecordTable";
+import { SettingsModal } from "./components/SettingsModal";
+import type { ExportData } from "./types";
 
-const CLEARING_ALL_DATA_FLAG = '__takeYourTimeClearingAllData';
+const CLEARING_ALL_DATA_FLAG = "__takeYourTimeClearingAllData";
 
 type ClearAllDataWindow = Window & {
   [CLEARING_ALL_DATA_FLAG]?: boolean;
@@ -29,30 +29,32 @@ function App() {
   // Apply theme class to body
   useEffect(() => {
     let activeTheme = settings.theme;
-    if (activeTheme === 'auto') {
-      activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (activeTheme === "auto") {
+      activeTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
     }
 
-    if (activeTheme === 'light') {
-      document.body.classList.add('light-theme');
+    if (activeTheme === "light") {
+      document.body.classList.add("light-theme");
     } else {
-      document.body.classList.remove('light-theme');
+      document.body.classList.remove("light-theme");
     }
   }, [settings.theme]);
 
   // Handle system theme changes if set to auto
   useEffect(() => {
-    if (settings.theme !== 'auto') return;
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    if (settings.theme !== "auto") return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
       if (e.matches) {
-        document.body.classList.remove('light-theme');
+        document.body.classList.remove("light-theme");
       } else {
-        document.body.classList.add('light-theme');
+        document.body.classList.add("light-theme");
       }
     };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [settings.theme]);
 
   // Warning when closing the tab
@@ -61,27 +63,28 @@ function App() {
       if ((window as ClearAllDataWindow)[CLEARING_ALL_DATA_FLAG]) return;
 
       e.preventDefault();
-      const message = "Please export your data before closing to prevent data loss!";
+      const message =
+        "Please export your data before closing to prevent data loss!";
       e.returnValue = message;
       return message;
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   const cycleTheme = () => {
-    const nextTheme: Record<string, 'auto' | 'dark' | 'light'> = {
-      auto: 'dark',
-      dark: 'light',
-      light: 'auto',
+    const nextTheme: Record<string, "auto" | "dark" | "light"> = {
+      auto: "dark",
+      dark: "light",
+      light: "auto",
     };
     updateSettings({ theme: nextTheme[settings.theme] });
   };
 
   const getThemeIcon = () => {
-    if (settings.theme === 'auto') return '💻';
-    if (settings.theme === 'dark') return '🌙';
-    return '☀️';
+    if (settings.theme === "auto") return "💻";
+    if (settings.theme === "dark") return "🌙";
+    return "☀️";
   };
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,40 +98,64 @@ function App() {
         if (json.records || json.settings) {
           importData(json);
         } else {
-          alert('Invalid file format.');
+          alert("Invalid file format.");
         }
       } catch {
-        alert('Failed to parse JSON file.');
+        alert("Failed to parse JSON file.");
       }
     };
     reader.readAsText(file);
     // Reset input
-    e.target.value = '';
+    e.target.value = "";
   };
 
-  const { totalOverwork, totalUnderwork, netBalance } = calculateBalances(records, settings);
+  const { totalOverwork, totalUnderwork, netBalance } = calculateBalances(
+    records,
+    settings,
+  );
 
   return (
     <div className="app-container">
-      <header className="flex-between glass-panel" style={{ padding: '16px 24px', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+      <header
+        className="flex-between glass-panel"
+        style={{
+          padding: "16px 24px",
+          marginBottom: "24px",
+          flexWrap: "wrap",
+          gap: "12px",
+        }}
+      >
         <h1>Take Your Time</h1>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          
-          <button className="secondary" onClick={cycleTheme} title={`Theme: ${settings.theme}`}>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            className="secondary"
+            onClick={cycleTheme}
+            title={`Theme: ${settings.theme}`}
+          >
             {getThemeIcon()}
           </button>
-          
-          <label className="secondary" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '10px 16px',
-            border: '1px solid var(--glass-border)',
-            borderRadius: 'var(--radius)',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-          }}>
-            Save Data
+
+          <label
+            className="secondary"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "10px 16px",
+              border: "1px solid var(--glass-border)",
+              borderRadius: "var(--radius)",
+              cursor: "pointer",
+              fontSize: "0.9rem",
+              fontWeight: 500,
+            }}
+          >
+            Load Data
             <input
               type="file"
               accept=".json"
@@ -138,7 +165,7 @@ function App() {
           </label>
 
           <button className="secondary" onClick={exportData}>
-            Load Data
+            Save Data
           </button>
 
           <button className="secondary" onClick={() => setIsSettingsOpen(true)}>
@@ -154,11 +181,11 @@ function App() {
         settings={settings}
       />
 
-      <RecordTable 
-        records={records} 
-        settings={settings} 
+      <RecordTable
+        records={records}
+        settings={settings}
         onUpdate={addRecord}
-        onDelete={deleteRecord} 
+        onDelete={deleteRecord}
       />
 
       {isSettingsOpen && (
