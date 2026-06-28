@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   standardHours: 8,
   expirationMonths: 3,
   theme: 'auto',
+  skipWeekends: false,
 };
 
 const CLEARING_ALL_DATA_FLAG = '__takeYourTimeClearingAllData';

@@ -5,6 +5,7 @@ import { MONTH_NAMES, formatHoursToHHMM } from '../utils/calculations';
 interface RecordTableProps {
   records: WorkRecord[];
   settings: AppSettings;
+  onSettingsChange: (settings: Partial<AppSettings>) => void;
   onUpdate: (month: number, day: number, hours: number) => void;
   onDelete: (month: number, day: number) => void;
 }
@@ -41,7 +42,7 @@ function getMonthCalendar(year: number, month: number) {
   return weeks;
 }
 
-export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onUpdate, onDelete }) => {
+export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onSettingsChange, onUpdate, onDelete }) => {
   const currentMonthIdx = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonthIdx);
   const [editState, setEditState] = useState<{ key: string; value: string } | null>(null);
@@ -68,6 +69,10 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
     while (row) {
       const nextH = row.querySelector('.time-input-hours') as HTMLInputElement;
       if (nextH) {
+        if (settings.skipWeekends && row.getAttribute('data-weekend') === 'true') {
+          row = row.nextElementSibling;
+          continue;
+        }
         setTimeout(() => { nextH.focus(); nextH.select(); }, 0);
         return;
       }
@@ -80,10 +85,11 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
   const renderRow = (dateObj: { month: number; day: number } | null, weekIdx: number, dayIdx: number) => {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const dayName = dayNames[dayIdx];
+    const isWeekend = dayIdx >= 5;
 
     if (!dateObj) {
       return (
-        <tr key={`empty-${weekIdx}-${dayIdx}`} className="empty-row">
+        <tr key={`empty-${weekIdx}-${dayIdx}`} className="empty-row" data-weekend={isWeekend}>
           <td className="text-muted">{dayName}</td>
           <td className="text-muted"></td>
           <td className="text-muted">-</td>
@@ -117,7 +123,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
     };
 
     return (
-      <tr key={`date-${dateObj.month}-${dateObj.day}`} className={!isFilled ? "empty-row" : ""}>
+      <tr key={`date-${dateObj.month}-${dateObj.day}`} className={!isFilled ? "empty-row" : ""} data-weekend={isWeekend}>
         <td className={!isFilled ? "text-muted" : ""}>{dayName}</td>
         <td className={!isFilled ? "text-muted" : ""}>{monthName} {dateObj.day}</td>
         <td>
@@ -220,9 +226,22 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onU
     <div className="glass-panel">
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ marginBottom: '8px' }}>View Month</h2>
-        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '16px' }}>
-          💡 Tip: Type 2 digits for hours → auto-jumps to minutes. Type 2 digits for minutes → auto-jumps to the next day!
-        </p>
+        <div className="table-toolbar">
+          <p className="text-muted table-tip">
+            💡 Tip: Type 2 digits for hours → auto-jumps to minutes. Type 2 digits for minutes → auto-jumps to the next day!
+          </p>
+          <label className="switch-control">
+            <input
+              type="checkbox"
+              checked={settings.skipWeekends}
+              onChange={(e) => onSettingsChange({ skipWeekends: e.target.checked })}
+            />
+            <span className="switch-track" aria-hidden="true">
+              <span className="switch-thumb" />
+            </span>
+            <span>Skip weekends</span>
+          </label>
+        </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {MONTH_NAMES.map((name, i) => (
             <button

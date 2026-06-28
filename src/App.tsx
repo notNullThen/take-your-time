@@ -190,6 +190,7 @@ function App() {
       <RecordTable
         records={records}
         settings={settings}
+        onSettingsChange={updateSettings}
         onUpdate={addRecord}
         onDelete={deleteRecord}
       />

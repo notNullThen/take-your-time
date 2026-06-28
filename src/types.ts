@@ -8,6 +8,7 @@ export interface AppSettings {
   standardHours: number; // default 8
   expirationMonths: number | 'endless'; // default 3
   theme: 'auto' | 'dark' | 'light'; // default auto
+  skipWeekends: boolean; // default false
 }
 
 export interface ExportData {

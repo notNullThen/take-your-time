@@ -9,6 +9,7 @@ type TestData = {
     standardHours: number;
     expirationMonths: number | 'endless';
     theme: 'auto' | 'dark' | 'light';
+    skipWeekends: boolean;
   };
 };
 
@@ -18,6 +19,7 @@ const defaultData: TestData = {
     standardHours: 8,
     expirationMonths: 3,
     theme: 'light',
+    skipWeekends: false,
   },
 };
 
@@ -114,6 +116,29 @@ test.describe('time balance UI calculations', () => {
       await expect(page.getByTestId('underwork-balance')).toHaveText('-02:00');
       await expect(page.getByTestId('total-net-balance')).toHaveText('02:00');
       await expect(page.getByTestId('total-net-balance')).toHaveClass(/text-danger/);
+    });
+  });
+
+  test('skips weekends when auto-advancing after minutes are entered', async ({ page }) => {
+    await test.step('Open June 2026 with weekend skipping enabled', async () => {
+      await openAppWithData(page, {
+        ...defaultData,
+        settings: {
+          ...defaultData.settings,
+          skipWeekends: true,
+        },
+      });
+      await page.getByRole('button', { name: 'June' }).click();
+    });
+
+    await test.step('Enter time on Friday and verify focus jumps to Monday', async () => {
+      const friday = page.getByRole('row').filter({ hasText: 'June 5' });
+      const monday = page.getByRole('row').filter({ hasText: 'June 8' });
+
+      await friday.locator('.time-input-hours').fill('08');
+      await friday.locator('.time-input-minutes').fill('30');
+
+      await expect(monday.locator('.time-input-hours')).toBeFocused();
     });
   });
 });
