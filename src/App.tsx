@@ -119,7 +119,7 @@ function App() {
             fontSize: '0.9rem',
             fontWeight: 500,
           }}>
-            Import JSON
+            Save Data
             <input
               type="file"
               accept=".json"
@@ -129,7 +129,7 @@ function App() {
           </label>
 
           <button className="secondary" onClick={exportData}>
-            Export JSON
+            Load Data
           </button>
 
           <button className="secondary" onClick={() => setIsSettingsOpen(true)}>
