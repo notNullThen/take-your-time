@@ -19,7 +19,7 @@ const defaultData: TestData = {
     standardHours: 8,
     expirationMonths: 3,
     theme: 'light',
-    skipWeekends: false,
+    skipWeekends: true,
   },
 };
 

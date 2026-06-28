@@ -38,7 +38,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   }, []);
 
   return (
-    <div className="grid-2">
+    <div className="grid-2 summary-cards">
       <div className="glass-panel">
         <h2 className="text-muted">Total Net Balance</h2>
         <h1

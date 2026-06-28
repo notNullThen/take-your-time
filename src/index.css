@@ -235,6 +235,14 @@ input[type="number"] {
   gap: 16px;
 }
 
+.summary-cards {
+  margin-bottom: 24px;
+}
+
+.summary-cards > .glass-panel {
+  margin-bottom: 0;
+}
+
 .breakdown-card {
   overflow: hidden;
 }
@@ -483,6 +491,11 @@ body.light-theme .empty-row td {
     gap: 12px;
   }
 
+  .summary-cards {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
   .glass-panel {
     padding: 18px;
     margin-bottom: 16px;
@@ -494,8 +507,8 @@ body.light-theme .empty-row td {
     font-size: 16px;
   }
 
-  .breakdown-card:not([open]) {
-    margin-bottom: 16px;
+  .summary-cards > .breakdown-card:not([open]) {
+    margin-bottom: 0;
   }
 
   .table-toolbar {

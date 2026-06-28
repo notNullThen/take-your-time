@@ -232,7 +232,9 @@ export const RecordTable: React.FC<RecordTableProps> = ({ records, settings, onS
         <h2 style={{ marginBottom: '8px' }}>View Month</h2>
         <div className="table-toolbar">
           <p className="text-muted table-tip">
-            💡 Tip: Type 2 digits for hours → auto-jumps to minutes. Type 2 digits for minutes → auto-jumps to the next day!
+            💡 Tip: Type 2 digits for hours → auto-jumps to minutes. Type 2 digits for minutes → auto-jumps to the next day.
+            <br />
+            💡 Tip: Unfilled days count as standard full worked days.
           </p>
           <label className="switch-control">
             <input
